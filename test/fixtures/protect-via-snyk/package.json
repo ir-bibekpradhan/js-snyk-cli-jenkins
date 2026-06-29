@@ -1,0 +1,20 @@
+{
+  "name": "@remy/protect-test",
+  "version": "1.0.4",
+  "description": "protect-test",
+  "main": "index.js",
+  "dependencies": {
+    "semver": "^2.3.2",
+    "get-uri": "2.0.2",
+    "snyk": "*"
+  },
+  "scripts": {
+    "env": "env",
+    "test": "snyk test && echo \"Error: no test specified\" && exit 1",
+    "snyk-protect": "snyk protect",
+    "postinstall": "npm run snyk-protect"
+  },
+  "author": "",
+  "license": "ISC",
+  "snyk": true
+}

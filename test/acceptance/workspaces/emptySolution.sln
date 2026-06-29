@@ -1,0 +1,13 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NonExistantProject", "NoSuchFolder/NoSuchFile.csproj", "{9A79CF26-C7E8-47A3-B718-C5E654AA2701}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 2
+		SccEnterpriseProvider = {FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}
+		SccProjectUniqueName1 = nuget-app\doesnt_matter.csproj
+		SccProjectName1 = Doesnt.Matter
+		SccLocalPath1 = Doesnt.Matter
+	EndGlobalSection
+EndGlobal

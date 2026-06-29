@@ -1,0 +1,7 @@
+title: deep deps
+a-1 uses b-1
+b-1 uses c-1
+c-1 has a vuln, fixed in c-2
+b-2 uses c-2 (fixes vuln)
+c-2 uses d-1
+app uses a-1

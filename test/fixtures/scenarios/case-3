@@ -1,0 +1,5 @@
+title: simple patch
+a-1 uses b-1
+b-1 has a vuln
+p1 fixes vuln
+App uses a-1

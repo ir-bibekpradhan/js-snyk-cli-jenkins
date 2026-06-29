@@ -1,0 +1,5 @@
+title: no remediation
+
+a-1 uses b-1
+b-1 has vuln v1
+app uses a-1

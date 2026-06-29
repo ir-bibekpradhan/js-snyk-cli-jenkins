@@ -1,0 +1,5 @@
+title: upgrade leads to version with vulns
+
+App uses a-1
+a-1 has vuln v1, fixed in a-2
+a-2 has vuln v2, fixed in a-3

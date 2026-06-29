@@ -1,0 +1,24 @@
+{
+ "ignore": {
+   "npm:uglify-js:20150824": [
+     {
+       "handlebars > uglify-js": {
+         "reason": "None given",
+         "expires": "2015-11-15T09:52:08.820Z"
+       }
+     },
+     {
+       "express-hbs > handlebars > uglify-js": {
+         "reason": "Not used",
+         "expires": "2015-11-15T09:52:08.820Z"
+       }
+     },
+     {
+       "jade > transformers > uglify-js": {
+         "reason": "n",
+         "expires": "2015-10-23T09:52:08.820Z"
+       }
+     }
+   ]
+ }
+}

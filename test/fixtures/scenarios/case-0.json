@@ -1,0 +1,78 @@
+{
+  "title": "title: no remediation",
+  "pkg": {
+    "name": "app",
+    "version": "0.0.0",
+    "full": "app@0.0.0",
+    "dependencies": {
+      "a": {
+        "name": "a",
+        "version": "1.0.0",
+        "full": "a@1.0.0",
+        "path": [
+          "app@0.0.0",
+          "a@1.0.0"
+        ],
+        "dependencies": {
+          "b": {
+            "name": "b",
+            "version": "1.0.0",
+            "full": "b@1.0.0",
+            "path": [
+              "app@0.0.0",
+              "a@1.0.0",
+              "b@1.0.0"
+            ],
+            "dependencies": false
+          }
+        }
+      }
+    },
+    "path": [
+      "app@0.0.0"
+    ]
+  },
+  "packages": {
+    "a@1.0.0": {
+      "dependencies": {
+        "b": {
+          "name": "b",
+          "version": "1.0.0",
+          "full": "b@1.0.0",
+          "path": [],
+          "dependencies": {}
+        }
+      }
+    },
+    "@<0.0.0": {
+      "dependencies": {}
+    }
+  },
+  "vulnerabilities": [
+    {
+      "moduleName": "b",
+      "id": "v1",
+      "name": "b",
+      "version": "1.0.0",
+      "below": "1.0.0",
+      "semver": {
+        "vulnerable": "1.0.0",
+        "patched": "<0.0.0"
+      },
+      "severity": "high",
+      "info": [
+        "https://example.com/vuln/v1"
+      ],
+      "from": [
+        "app@0.0.0",
+        "a@1.0.0",
+        "b@1.0.0"
+      ],
+      "upgradePath": [
+        false,
+        false,
+        false
+      ]
+    }
+  ]
+}

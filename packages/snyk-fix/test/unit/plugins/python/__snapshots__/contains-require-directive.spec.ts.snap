@@ -1,0 +1,81 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`containsRequireDirective with -c 1`] = `
+{
+  "containsRequire": true,
+  "matches": [
+    [
+      "-c constraints.txt",
+      "c",
+      "constraints.txt",
+    ],
+  ],
+}
+`;
+
+exports[`containsRequireDirective with -r & -c 1`] = `
+{
+  "containsRequire": true,
+  "matches": [
+    [
+      "-c constraints.txt",
+      "c",
+      "constraints.txt",
+    ],
+    [
+      "-r base.txt",
+      "r",
+      "base.txt",
+    ],
+  ],
+}
+`;
+
+exports[`containsRequireDirective with -r & -c after deps 1`] = `
+{
+  "containsRequire": true,
+  "matches": [
+    [
+      "-c constraints.txt",
+      "c",
+      "constraints.txt",
+    ],
+    [
+      "-r base.txt",
+      "r",
+      "base.txt",
+    ],
+  ],
+}
+`;
+
+exports[`containsRequireDirective with -r 1`] = `
+{
+  "containsRequire": true,
+  "matches": [
+    [
+      "-r requirements.txt",
+      "r",
+      "requirements.txt",
+    ],
+  ],
+}
+`;
+
+exports[`containsRequireDirective with multiple -r 1`] = `
+{
+  "containsRequire": true,
+  "matches": [
+    [
+      "-r requirements.txt",
+      "r",
+      "requirements.txt",
+    ],
+    [
+      "-r base.txt",
+      "r",
+      "base.txt",
+    ],
+  ],
+}
+`;

@@ -1,0 +1,3 @@
+title: direct upgrade
+a-1 has vuln v1, fixed in a-2
+App uses a-1

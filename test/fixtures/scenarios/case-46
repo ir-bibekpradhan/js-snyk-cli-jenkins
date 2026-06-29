@@ -1,0 +1,8 @@
+title: two vulns with two patches
+
+a-1 uses b-1
+b-1 has vuln v1
+b-1 has vuln v2
+p1 fixes v1 in october
+p2 fixes v2 in november
+App uses a-1

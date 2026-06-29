@@ -1,0 +1,13 @@
+title: mix of upgrades and patches
+
+a-1 uses b-1
+b-1 has vuln v1 fixed in b-2
+b-1 has vuln v2
+p1 fixes v2 in october
+b-1 uses c-1
+c-1 has vuln v3 fixed in c-2
+b-4 uses c-2
+a-2 uses b-2
+a-3 uses b-3
+a-4 uses b-4
+App uses a-1

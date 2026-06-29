@@ -1,0 +1,5 @@
+title: indirect upgrade
+a-1 uses b-1
+b-1 has a vuln, fixed in b-2
+a-2 uses b-2 (fixes vuln)
+App uses a-1

@@ -1,0 +1,5 @@
+title: patch in future version
+
+a-1 has vuln v1, fixed in a-2
+a-2 has vuln v2, has no fix but has patch p1
+App uses a-1

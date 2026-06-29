@@ -1,0 +1,160 @@
+{
+  "title": "title: upgrades to different versions",
+  "pkg": {
+    "name": "app",
+    "version": "0.0.0",
+    "full": "app@0.0.0",
+    "dependencies": {
+      "a": {
+        "name": "a",
+        "version": "1.0.0",
+        "full": "a@1.0.0",
+        "path": [
+          "app@0.0.0",
+          "a@1.0.0"
+        ],
+        "dependencies": {
+          "b": {
+            "name": "b",
+            "version": "1.0.0",
+            "full": "b@1.0.0",
+            "path": [
+              "app@0.0.0",
+              "a@1.0.0",
+              "b@1.0.0"
+            ],
+            "dependencies": false
+          },
+          "c": {
+            "name": "c",
+            "version": "1.0.0",
+            "full": "c@1.0.0",
+            "path": [
+              "app@0.0.0",
+              "a@1.0.0",
+              "c@1.0.0"
+            ],
+            "dependencies": false
+          }
+        }
+      }
+    },
+    "path": [
+      "app@0.0.0"
+    ]
+  },
+  "packages": {
+    "a@1.0.0": {
+      "dependencies": {
+        "b": {
+          "name": "b",
+          "version": "1.0.0",
+          "full": "b@1.0.0",
+          "path": [],
+          "dependencies": {}
+        },
+        "c": {
+          "name": "c",
+          "version": "1.0.0",
+          "full": "c@1.0.0",
+          "path": [],
+          "dependencies": {}
+        }
+      }
+    },
+    "b@2.0.0": {
+      "dependencies": {}
+    },
+    "c@3.0.0": {
+      "dependencies": {}
+    },
+    "a@2.0.0": {
+      "dependencies": {
+        "b": {
+          "name": "b",
+          "version": "2.0.0",
+          "full": "b@2.0.0",
+          "path": [],
+          "dependencies": {}
+        },
+        "c": {
+          "name": "c",
+          "version": "2.0.0",
+          "full": "c@2.0.0",
+          "path": [],
+          "dependencies": {}
+        }
+      }
+    },
+    "a@3.0.0": {
+      "dependencies": {
+        "b": {
+          "name": "b",
+          "version": "2.0.0",
+          "full": "b@2.0.0",
+          "path": [],
+          "dependencies": {}
+        },
+        "c": {
+          "name": "c",
+          "version": "3.0.0",
+          "full": "c@3.0.0",
+          "path": [],
+          "dependencies": {}
+        }
+      }
+    }
+  },
+  "vulnerabilities": [
+    {
+      "moduleName": "b",
+      "id": "v1",
+      "name": "b",
+      "version": "1.0.0",
+      "below": "1.0.0",
+      "semver": {
+        "vulnerable": "1.0.0",
+        "patched": "2.0.0"
+      },
+      "severity": "high",
+      "info": [
+        "https://example.com/vuln/v1"
+      ],
+      "from": [
+        "app@0.0.0",
+        "a@1.0.0",
+        "b@1.0.0"
+      ],
+      "upgradePath": [
+        false,
+        "a@2.0.0",
+        "b@2.0.0"
+      ]
+    },
+    {
+      "moduleName": "c",
+      "id": "v2",
+      "name": "c",
+      "version": "1.0.0",
+      "below": "1.0.0",
+      "semver": {
+        "vulnerable": "1.0.0",
+        "patched": "3.0.0"
+      },
+      "severity": "high",
+      "info": [
+        "https://example.com/vuln/v2"
+      ],
+      "from": [
+        "app@0.0.0",
+        "a@1.0.0",
+        "c@1.0.0"
+      ],
+      "upgradePath": [
+        false,
+        "a@3.0.0",
+        "c@3.0.0"
+      ]
+    }
+  ]
+}
