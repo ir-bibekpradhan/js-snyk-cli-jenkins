@@ -5,6 +5,7 @@ pipeline {
         IR_URL = 'https://app.stage.invisirisk.com'
         IR_TOKEN = credentials('IR_API_KEY')
         DEBUG = 'true'
+        DOCKER_BIN = 'C:\\Program Files\\Docker\\Docker\\resources\\bin'
         DOCKER_EXE = 'C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe'
     }
 
@@ -18,6 +19,8 @@ pipeline {
         stage('Run in Linux Docker Container') {
             steps {
                 bat '''
+                    set "PATH=%DOCKER_BIN%;%PATH%"
+
                     "%DOCKER_EXE%" --version
 
                     "%DOCKER_EXE%" run --rm ^
