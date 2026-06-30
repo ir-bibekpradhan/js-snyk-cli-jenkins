@@ -28,14 +28,19 @@ pipeline {
                 '''
 
                 script {
-                    def wsUnix = env.WORKSPACE.replace('\\', '/')
-                    wsUnix = wsUnix.replaceFirst(/^([A-Za-z]):/) { full, drive -> "/${drive.toLowerCase()}" }
+                    def wsWin = env.WORKSPACE
+                    def drive = wsWin.substring(0, 1).toLowerCase()
+                    def rest = wsWin.substring(2).replace('\\', '/')
+                    def wsUnix = "/${drive}${rest}"
 
                     bat """
-                        echo Git Bash workspace path:
+                        echo Windows workspace:
+                        echo %WORKSPACE%
+
+                        echo Git Bash workspace:
                         echo ${wsUnix}
 
-                        bash -lc "cd '${wsUnix}' && chmod +x bootstrap.sh && bash ./bootstrap.sh"
+                        bash -lc "cd '${wsUnix}' && pwd && ls -l bootstrap.sh && chmod +x bootstrap.sh && bash ./bootstrap.sh"
 
                         bash -lc "test -f /tmp/ir_envs"
 
