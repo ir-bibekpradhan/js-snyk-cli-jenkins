@@ -25,23 +25,27 @@ pipeline {
                       echo bootstrap download failed
                       exit /b 1
                     )
-
-                    set "BOOTSTRAP_SH=%WORKSPACE%\\bootstrap.sh"
-                    set "BOOTSTRAP_SH=%BOOTSTRAP_SH:\\=/%"
-
-                    echo Running bootstrap with Git Bash:
-                    echo %BOOTSTRAP_SH%
-
-                    bash "%BOOTSTRAP_SH%"
-
-                    bash -lc "test -f /tmp/ir_envs"
-
-                    if %ERRORLEVEL% NEQ 0 (
-                      echo /tmp/ir_envs missing inside Git Bash
-                      bash -lc "cat /tmp/bootstrap.log 2>/dev/null || true"
-                      exit /b 1
-                    )
                 '''
+
+                script {
+                    def wsUnix = env.WORKSPACE.replace('\\', '/')
+                    wsUnix = wsUnix.replaceFirst(/^([A-Za-z]):/) { full, drive -> "/${drive.toLowerCase()}" }
+
+                    bat """
+                        echo Git Bash workspace path:
+                        echo ${wsUnix}
+
+                        bash -lc "cd '${wsUnix}' && chmod +x bootstrap.sh && bash ./bootstrap.sh"
+
+                        bash -lc "test -f /tmp/ir_envs"
+
+                        if %ERRORLEVEL% NEQ 0 (
+                          echo /tmp/ir_envs missing inside Git Bash
+                          bash -lc "cat /tmp/bootstrap.log 2>/dev/null || true"
+                          exit /b 1
+                        )
+                    """
+                }
             }
         }
 
