@@ -5,6 +5,7 @@ pipeline {
         IR_URL = 'https://app.stage.invisirisk.com'
         IR_TOKEN = credentials('IR_API_KEY')
         DEBUG = 'true'
+        DOCKER_EXE = 'C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe'
     }
 
     stages {
@@ -17,25 +18,27 @@ pipeline {
         stage('Run in Linux Docker Container') {
             steps {
                 bat '''
-                    docker --version
+                    "%DOCKER_EXE%" --version
 
-                    docker run --rm ^
+                    "%DOCKER_EXE%" run --rm ^
                       -e IR_URL="%IR_URL%" ^
                       -e IR_TOKEN="%IR_TOKEN%" ^
                       -e DEBUG="%DEBUG%" ^
                       -v "%WORKSPACE%:/workspace" ^
                       -w /workspace ^
-                      python:3.11 ^
+                      node:20-bookworm ^
                       bash -lc "set -e; \
-                        echo Running inside Linux container; \
+                        echo Running inside Linux Node container; \
                         uname -a; \
-                        python --version; \
-                        pip --version; \
+                        node --version; \
+                        npm --version; \
                         echo Starting InvisiRisk PSE setup; \
                         curl -sSf -H \\"x-api-key: ${IR_TOKEN}\\" \\"${IR_URL}/ingestionapi/v1/pse/bootstrap\\" | bash; \
                         . /tmp/ir_envs; \
-                        echo Running user script; \
-                        if [ -f requirements.txt ]; then pip install -r requirements.txt; else echo requirements.txt not found, skipping pip install; fi; \
+                        echo Installing npm dependencies; \
+                        if [ -f package.json ]; then npm install --legacy-peer-deps; else echo package.json not found; exit 1; fi; \
+                        echo Running dependency check; \
+                        npm ls || true; \
                         pse-data-collector cleanup || true"
                 '''
             }
