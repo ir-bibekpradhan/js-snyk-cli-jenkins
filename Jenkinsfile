@@ -26,11 +26,19 @@ pipeline {
                       exit /b 1
                     )
 
-                    bash "%WORKSPACE%\\bootstrap.sh"
+                    set "BOOTSTRAP_SH=%WORKSPACE%\\bootstrap.sh"
+                    set "BOOTSTRAP_SH=%BOOTSTRAP_SH:\\=/%"
 
-                    if not exist "C:\\tmp\\ir_envs" (
-                      echo C:\\tmp\\ir_envs missing
-                      if exist "C:\\tmp\\bootstrap.log" type "C:\\tmp\\bootstrap.log"
+                    echo Running bootstrap with Git Bash:
+                    echo %BOOTSTRAP_SH%
+
+                    bash "%BOOTSTRAP_SH%"
+
+                    bash -lc "test -f /tmp/ir_envs"
+
+                    if %ERRORLEVEL% NEQ 0 (
+                      echo /tmp/ir_envs missing inside Git Bash
+                      bash -lc "cat /tmp/bootstrap.log 2>/dev/null || true"
                       exit /b 1
                     )
                 '''
@@ -40,9 +48,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 bat '''
-                    node --version
-                    npm --version
-                    npm install --legacy-peer-deps
+                    bash -lc "source /tmp/ir_envs && node --version && npm --version && npm install --legacy-peer-deps"
                 '''
             }
         }
@@ -50,8 +56,7 @@ pipeline {
         stage('Dependency Check') {
             steps {
                 bat '''
-                    npm ls
-                    exit /b 0
+                    bash -lc "source /tmp/ir_envs && npm ls || true"
                 '''
             }
         }
@@ -90,12 +95,7 @@ pipeline {
     post {
         always {
             bat '''
-                where pse-data-collector >nul 2>nul
-                if %ERRORLEVEL% EQU 0 (
-                  pse-data-collector cleanup
-                ) else (
-                  echo pse-data-collector not found, skipping cleanup
-                )
+                bash -lc "if command -v pse-data-collector >/dev/null 2>&1; then pse-data-collector cleanup || true; else echo pse-data-collector not found, skipping cleanup; fi"
                 exit /b 0
             '''
         }
