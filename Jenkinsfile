@@ -16,37 +16,32 @@ pipeline {
 
         stage('InvisiRisk PSE Setup') {
             steps {
-                sh '''
-                    set -e
+                bat '''
+                    echo Downloading InvisiRisk PSE bootstrap
 
-                    echo "Downloading InvisiRisk PSE bootstrap"
+                    curl -sSf -H "x-api-key: %IR_TOKEN%" "%IR_URL%/ingestionapi/v1/pse/bootstrap?mode=native&runner=any" -o "%WORKSPACE%\\bootstrap.sh"
 
-                    curl -sSf -H "x-api-key: ${IR_TOKEN}" \
-                      "${IR_URL}/ingestionapi/v1/pse/bootstrap?mode=native&runner=any" \
-                      -o /tmp/bootstrap.sh
+                    if not exist "%WORKSPACE%\\bootstrap.sh" (
+                      echo bootstrap download failed
+                      exit /b 1
+                    )
 
-                    chmod +x /tmp/bootstrap.sh
-                    bash /tmp/bootstrap.sh
+                    bash "%WORKSPACE%\\bootstrap.sh"
 
-                    test -f /tmp/ir_envs || {
-                      echo "/tmp/ir_envs missing"
-                      tail -n 200 /tmp/bootstrap.log || true
-                      exit 1
-                    }
+                    if not exist "C:\\tmp\\ir_envs" (
+                      echo C:\\tmp\\ir_envs missing
+                      if exist "C:\\tmp\\bootstrap.log" type "C:\\tmp\\bootstrap.log"
+                      exit /b 1
+                    )
                 '''
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh '''
-                    set -e
-
-                    . /tmp/ir_envs
-
-                    node --version || true
-                    npm --version || true
-
+                bat '''
+                    node --version
+                    npm --version
                     npm install --legacy-peer-deps
                 '''
             }
@@ -54,45 +49,37 @@ pipeline {
 
         stage('Dependency Check') {
             steps {
-                sh '''
-                    set -e
-
-                    . /tmp/ir_envs
-
-                    npm ls || true
+                bat '''
+                    npm ls
+                    exit /b 0
                 '''
             }
         }
 
         stage('Docker Build') {
             steps {
-                sh '''
-                    set -e
+                bat '''
+                    docker --version
 
-                    . /tmp/ir_envs
-
-                    docker --version || true
-
-                    if [ -f Dockerfile ]; then
+                    if exist Dockerfile (
                       docker build -t js-snyk-cli-jenkins:latest .
-                    else
-                      echo "Dockerfile not found, skipping Docker build"
-                    fi
+                    ) else (
+                      echo Dockerfile not found, skipping Docker build
+                    )
                 '''
             }
         }
 
         stage('Archive Artifact') {
             steps {
-                sh '''
-                    set -e
+                powershell '''
+                    New-Item -ItemType Directory -Force -Path "jenkins-artifacts" | Out-Null
 
-                    mkdir -p jenkins-artifacts
+                    if (Test-Path "jenkins-artifacts\\archive.zip") {
+                        Remove-Item "jenkins-artifacts\\archive.zip" -Force
+                    }
 
-                    zip -r jenkins-artifacts/archive.zip . \
-                      -x ".git/*" \
-                      -x "node_modules/*" \
-                      -x "jenkins-artifacts/*"
+                    Compress-Archive -Path * -DestinationPath "jenkins-artifacts\\archive.zip" -Force
                 '''
 
                 archiveArtifacts artifacts: 'jenkins-artifacts/archive.zip', fingerprint: true
@@ -102,12 +89,14 @@ pipeline {
 
     post {
         always {
-            sh '''
-                if command -v pse-data-collector >/dev/null 2>&1; then
-                  pse-data-collector cleanup || true
-                else
-                  echo "pse-data-collector not found, skipping cleanup"
-                fi
+            bat '''
+                where pse-data-collector >nul 2>nul
+                if %ERRORLEVEL% EQU 0 (
+                  pse-data-collector cleanup
+                ) else (
+                  echo pse-data-collector not found, skipping cleanup
+                )
+                exit /b 0
             '''
         }
     }
