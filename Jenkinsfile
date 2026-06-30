@@ -19,10 +19,19 @@ pipeline {
         stage('Run in Linux Docker Container') {
             steps {
                 bat '''
+                    echo Adding Docker Desktop bin folder to PATH
                     set "PATH=%DOCKER_BIN%;%PATH%"
 
+                    echo Checking Docker
                     "%DOCKER_EXE%" --version
 
+                    echo Checking Docker credential helper
+                    where docker-credential-desktop
+
+                    echo Pulling Node image
+                    "%DOCKER_EXE%" pull node:20-bookworm
+
+                    echo Running build inside Linux Node container
                     "%DOCKER_EXE%" run --rm ^
                       -e IR_URL="%IR_URL%" ^
                       -e IR_TOKEN="%IR_TOKEN%" ^
