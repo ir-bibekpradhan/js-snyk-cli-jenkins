@@ -16,7 +16,7 @@ pipeline {
             }
         }
 
-        stage('Run in Linux Docker Container') {
+        stage('Run Build with InvisiRisk PSE') {
             steps {
                 bat '''
                     echo Adding Docker Desktop bin folder to PATH
@@ -31,7 +31,7 @@ pipeline {
                     echo Pulling Node image
                     "%DOCKER_EXE%" pull node:20-bookworm
 
-                    echo Running build inside Linux Node container
+                    echo Running Linux container with PSE first, then npm
                     "%DOCKER_EXE%" run --rm ^
                       -e IR_URL="%IR_URL%" ^
                       -e IR_TOKEN="%IR_TOKEN%" ^
@@ -40,17 +40,27 @@ pipeline {
                       -w /workspace ^
                       node:20-bookworm ^
                       bash -lc "set -e; \
-                        echo Running inside Linux Node container; \
-                        uname -a; \
-                        node --version; \
-                        npm --version; \
-                        echo Starting InvisiRisk PSE setup; \
+                        echo ================================; \
+                        echo InvisiRisk PSE setup - FIRST; \
+                        echo ================================; \
                         curl -sSf -H \\"x-api-key: ${IR_TOKEN}\\" \\"${IR_URL}/ingestionapi/v1/pse/bootstrap\\" | bash; \
                         . /tmp/ir_envs; \
-                        echo Installing npm dependencies; \
+                        \
+                        echo ================================; \
+                        echo Now running package installation; \
+                        echo ================================; \
+                        node --version; \
+                        npm --version; \
                         if [ -f package.json ]; then npm install --legacy-peer-deps; else echo package.json not found; exit 1; fi; \
-                        echo Running dependency check; \
+                        \
+                        echo ================================; \
+                        echo Dependency check; \
+                        echo ================================; \
                         npm ls || true; \
+                        \
+                        echo ================================; \
+                        echo InvisiRisk PSE cleanup; \
+                        echo ================================; \
                         pse-data-collector cleanup || true"
                 '''
             }
