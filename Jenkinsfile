@@ -55,22 +55,6 @@ pipeline {
                 '''
             }
         }
-
-        stage('Archive Artifact') {
-            steps {
-                powershell '''
-                    New-Item -ItemType Directory -Force -Path "jenkins-artifacts" | Out-Null
-
-                    if (Test-Path "jenkins-artifacts\\archive.zip") {
-                        Remove-Item "jenkins-artifacts\\archive.zip" -Force
-                    }
-
-                    Compress-Archive -Path * -DestinationPath "jenkins-artifacts\\archive.zip" -Force
-                '''
-
-                archiveArtifacts artifacts: 'jenkins-artifacts/archive.zip', fingerprint: true
-            }
-        }
     }
 
     post {
