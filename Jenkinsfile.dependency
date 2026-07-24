@@ -1,0 +1,64 @@
+pipeline {
+    agent any
+
+    options {
+        skipDefaultCheckout(true)
+    }
+
+    environment {
+        IR_URL = 'https://app.dev.invisirisk.com'
+        IR_TOKEN = credentials('IR_TOKEN')
+        DEBUG = 'true'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Dependency Check') {
+            steps {
+                sh '''
+                    set -e
+
+                    echo "===== InvisiRisk PSE setup ====="
+
+                    sudo mkdir -p /pse-bin
+                    sudo chown -R jenkins:jenkins /pse-bin
+
+                    curl -sSf \
+                      -H "x-api-key: $IR_TOKEN" \
+                      "$IR_URL/ingestionapi/v1/pse/bootstrap" | bash
+
+                    . /tmp/ir_envs
+
+                    cleanup() {
+                        echo "===== InvisiRisk PSE cleanup ====="
+                        pse-data-collector cleanup || true
+                    }
+
+                    trap cleanup EXIT
+
+                    if [ -f package-lock.json ]; then
+                        npm ci --legacy-peer-deps
+                    elif [ -f package.json ]; then
+                        npm install --legacy-peer-deps
+                    else
+                        echo "package.json not found"
+                        exit 1
+                    fi
+
+                    npm ls || true
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Dependency-check job finished.'
+        }
+    }
+}
