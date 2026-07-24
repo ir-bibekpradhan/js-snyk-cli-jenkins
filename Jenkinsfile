@@ -14,11 +14,13 @@ pipeline {
             }
         }
 
-        stage('Check Docker') {
+        stage('Install Required Tools') {
             steps {
                 sh '''
-                    docker --version
-                    docker pull node:20-bookworm
+                    set -e
+
+                    apt-get update
+                    apt-get install -y curl ca-certificates nodejs npm
                 '''
             }
         }
@@ -28,40 +30,31 @@ pipeline {
                 stage('Job 1 - Install Dependencies') {
                     steps {
                         sh '''
-                            docker run --rm \
-                              --volumes-from jenkins \
-                              -e IR_URL="$IR_URL" \
-                              -e IR_TOKEN="$IR_TOKEN" \
-                              -e DEBUG="$DEBUG" \
-                              -w "$WORKSPACE" \
-                              node:20-bookworm \
-                              bash -lc '
-                                set -e
+                            set -e
 
-                                echo "================================"
-                                echo "InvisiRisk PSE setup"
-                                echo "================================"
+                            echo "================================"
+                            echo "InvisiRisk PSE setup"
+                            echo "================================"
 
-                                curl -sSf \
-                                  -H "x-api-key: $IR_TOKEN" \
-                                  "$IR_URL/ingestionapi/v1/pse/bootstrap" | bash
+                            curl -sSf \
+                              -H "x-api-key: $IR_TOKEN" \
+                              "$IR_URL/ingestionapi/v1/pse/bootstrap" | bash
 
-                                . /tmp/ir_envs
+                            . /tmp/ir_envs
 
-                                echo "================================"
-                                echo "Installing dependencies"
-                                echo "================================"
+                            echo "================================"
+                            echo "Installing dependencies"
+                            echo "================================"
 
-                                node --version
-                                npm --version
-                                npm install --legacy-peer-deps
+                            node --version
+                            npm --version
+                            npm install --legacy-peer-deps
 
-                                echo "================================"
-                                echo "InvisiRisk PSE cleanup"
-                                echo "================================"
+                            echo "================================"
+                            echo "InvisiRisk PSE cleanup"
+                            echo "================================"
 
-                                pse-data-collector cleanup || true
-                              '
+                            pse-data-collector cleanup || true
                         '''
                     }
                 }
@@ -69,39 +62,30 @@ pipeline {
                 stage('Job 2 - Dependency Check') {
                     steps {
                         sh '''
-                            docker run --rm \
-                              --volumes-from jenkins \
-                              -e IR_URL="$IR_URL" \
-                              -e IR_TOKEN="$IR_TOKEN" \
-                              -e DEBUG="$DEBUG" \
-                              -w "$WORKSPACE" \
-                              node:20-bookworm \
-                              bash -lc '
-                                set -e
+                            set -e
 
-                                echo "================================"
-                                echo "InvisiRisk PSE setup"
-                                echo "================================"
+                            echo "================================"
+                            echo "InvisiRisk PSE setup"
+                            echo "================================"
 
-                                curl -sSf \
-                                  -H "x-api-key: $IR_TOKEN" \
-                                  "$IR_URL/ingestionapi/v1/pse/bootstrap" | bash
+                            curl -sSf \
+                              -H "x-api-key: $IR_TOKEN" \
+                              "$IR_URL/ingestionapi/v1/pse/bootstrap" | bash
 
-                                . /tmp/ir_envs
+                            . /tmp/ir_envs
 
-                                echo "================================"
-                                echo "Dependency check"
-                                echo "================================"
+                            echo "================================"
+                            echo "Dependency check"
+                            echo "================================"
 
-                                npm install --legacy-peer-deps
-                                npm ls || true
+                            npm install --legacy-peer-deps
+                            npm ls || true
 
-                                echo "================================"
-                                echo "InvisiRisk PSE cleanup"
-                                echo "================================"
+                            echo "================================"
+                            echo "InvisiRisk PSE cleanup"
+                            echo "================================"
 
-                                pse-data-collector cleanup || true
-                              '
+                            pse-data-collector cleanup || true
                         '''
                     }
                 }
@@ -109,39 +93,30 @@ pipeline {
                 stage('Job 3 - Test') {
                     steps {
                         sh '''
-                            docker run --rm \
-                              --volumes-from jenkins \
-                              -e IR_URL="$IR_URL" \
-                              -e IR_TOKEN="$IR_TOKEN" \
-                              -e DEBUG="$DEBUG" \
-                              -w "$WORKSPACE" \
-                              node:20-bookworm \
-                              bash -lc '
-                                set -e
+                            set -e
 
-                                echo "================================"
-                                echo "InvisiRisk PSE setup"
-                                echo "================================"
+                            echo "================================"
+                            echo "InvisiRisk PSE setup"
+                            echo "================================"
 
-                                curl -sSf \
-                                  -H "x-api-key: $IR_TOKEN" \
-                                  "$IR_URL/ingestionapi/v1/pse/bootstrap" | bash
+                            curl -sSf \
+                              -H "x-api-key: $IR_TOKEN" \
+                              "$IR_URL/ingestionapi/v1/pse/bootstrap" | bash
 
-                                . /tmp/ir_envs
+                            . /tmp/ir_envs
 
-                                echo "================================"
-                                echo "Running tests"
-                                echo "================================"
+                            echo "================================"
+                            echo "Running tests"
+                            echo "================================"
 
-                                npm install --legacy-peer-deps
-                                npm test
+                            npm install --legacy-peer-deps
+                            npm test
 
-                                echo "================================"
-                                echo "InvisiRisk PSE cleanup"
-                                echo "================================"
+                            echo "================================"
+                            echo "InvisiRisk PSE cleanup"
+                            echo "================================"
 
-                                pse-data-collector cleanup || true
-                              '
+                            pse-data-collector cleanup || true
                         '''
                     }
                 }
