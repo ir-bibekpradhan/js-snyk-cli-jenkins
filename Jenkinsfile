@@ -1,181 +1,78 @@
 pipeline {
     agent any
 
-    options {
-        skipDefaultCheckout(true)
-    }
-
     environment {
         IR_URL = 'https://app.dev.invisirisk.com'
-        IR_TOKEN = credentials('IR_TOKEN')
+        IR_TOKEN = credentials('IR_API_KEY')
         DEBUG = 'true'
+        DOCKER_BIN = 'C:\\Program Files\\Docker\\Docker\\resources\\bin'
+        DOCKER_EXE = 'C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe'
     }
 
     stages {
-        stage('Verify Environment') {
+        stage('Checkout') {
             steps {
-                sh '''
-                    set -e
-
-                    echo "Checking required tools"
-                    curl --version
-                    node --version
-                    npm --version
-                '''
+                checkout scm
             }
         }
 
-        stage('Run Parallel Jobs') {
-            failFast true
+        stage('Run Build with InvisiRisk PSE') {
+            steps {
+                bat '''
+                    echo Adding Docker Desktop bin folder to PATH
+                    set "PATH=%DOCKER_BIN%;%PATH%"
 
-            parallel {
-                stage('Job 1 - Install Dependencies') {
-                    steps {
-                        dir('job-install') {
-                            deleteDir()
-                            checkout scm
+                    echo Checking Docker
+                    "%DOCKER_EXE%" --version
 
-                            sh '''
-                                set -e
+                    echo Checking Docker credential helper
+                    where docker-credential-desktop
 
-                                echo "================================"
-                                echo "Job 1: InvisiRisk PSE setup"
-                                echo "================================"
+                    echo Pulling Node image
+                    "%DOCKER_EXE%" pull node:20-bookworm
 
-                                curl -sSf \
-                                  -H "x-api-key: $IR_TOKEN" \
-                                  "$IR_URL/ingestionapi/v1/pse/bootstrap" | bash
-
-                                . /tmp/ir_envs
-
-                                cleanup() {
-                                    echo "================================"
-                                    echo "Job 1: InvisiRisk PSE cleanup"
-                                    echo "================================"
-
-                                    pse-data-collector cleanup || true
-                                }
-
-                                trap cleanup EXIT
-
-                                node --version
-                                npm --version
-
-                                if [ -f package-lock.json ]; then
-                                    npm ci --legacy-peer-deps
-                                elif [ -f package.json ]; then
-                                    npm install --legacy-peer-deps
-                                else
-                                    echo "package.json not found"
-                                    exit 1
-                                fi
-                            '''
-                        }
-                    }
-                }
-
-                stage('Job 2 - Dependency Check') {
-                    steps {
-                        dir('job-dependency-check') {
-                            deleteDir()
-                            checkout scm
-
-                            sh '''
-                                set -e
-
-                                echo "================================"
-                                echo "Job 2: InvisiRisk PSE setup"
-                                echo "================================"
-
-                                curl -sSf \
-                                  -H "x-api-key: $IR_TOKEN" \
-                                  "$IR_URL/ingestionapi/v1/pse/bootstrap" | bash
-
-                                . /tmp/ir_envs
-
-                                cleanup() {
-                                    echo "================================"
-                                    echo "Job 2: InvisiRisk PSE cleanup"
-                                    echo "================================"
-
-                                    pse-data-collector cleanup || true
-                                }
-
-                                trap cleanup EXIT
-
-                                if [ -f package-lock.json ]; then
-                                    npm ci --legacy-peer-deps
-                                elif [ -f package.json ]; then
-                                    npm install --legacy-peer-deps
-                                else
-                                    echo "package.json not found"
-                                    exit 1
-                                fi
-
-                                npm ls || true
-                            '''
-                        }
-                    }
-                }
-
-                stage('Job 3 - Run Tests') {
-                    steps {
-                        dir('job-tests') {
-                            deleteDir()
-                            checkout scm
-
-                            sh '''
-                                set -e
-
-                                echo "================================"
-                                echo "Job 3: InvisiRisk PSE setup"
-                                echo "================================"
-
-                                curl -sSf \
-                                  -H "x-api-key: $IR_TOKEN" \
-                                  "$IR_URL/ingestionapi/v1/pse/bootstrap" | bash
-
-                                . /tmp/ir_envs
-
-                                cleanup() {
-                                    echo "================================"
-                                    echo "Job 3: InvisiRisk PSE cleanup"
-                                    echo "================================"
-
-                                    pse-data-collector cleanup || true
-                                }
-
-                                trap cleanup EXIT
-
-                                if [ -f package-lock.json ]; then
-                                    npm ci --legacy-peer-deps
-                                elif [ -f package.json ]; then
-                                    npm install --legacy-peer-deps
-                                else
-                                    echo "package.json not found"
-                                    exit 1
-                                fi
-
-                                npm test
-                            '''
-                        }
-                    }
-                }
+                    echo Running Linux container with PSE first, then npm
+                    "%DOCKER_EXE%" run --rm ^
+                      -e IR_URL="%IR_URL%" ^
+                      -e IR_TOKEN="%IR_TOKEN%" ^
+                      -e DEBUG="%DEBUG%" ^
+                      -v "%WORKSPACE%:/workspace" ^
+                      -w /workspace ^
+                      node:20-bookworm ^
+                      bash -lc "set -e; \
+                        echo ================================; \
+                        echo InvisiRisk PSE setup - FIRST; \
+                        echo ================================; \
+                        curl -sSf -H \\"x-api-key: ${IR_TOKEN}\\" \\"${IR_URL}/ingestionapi/v1/pse/bootstrap\\" | bash; \
+                        . /tmp/ir_envs; \
+                        \
+                        echo ================================; \
+                        echo Now running package installation; \
+                        echo ================================; \
+                        node --version; \
+                        npm --version; \
+                        if [ -f package.json ]; then npm install --legacy-peer-deps; else echo package.json not found; exit 1; fi; \
+                        \
+                        echo ================================; \
+                        echo Dependency check; \
+                        echo ================================; \
+                        npm ls || true; \
+                        \
+                        echo ================================; \
+                        echo InvisiRisk PSE cleanup; \
+                        echo ================================; \
+                        pse-data-collector cleanup || true"
+                '''
             }
         }
     }
 
     post {
-        success {
-            echo 'All Jenkins jobs completed successfully.'
-        }
-
-        failure {
-            echo 'One or more Jenkins jobs failed.'
-        }
-
         always {
-            echo 'Jenkins pipeline finished.'
+            bat '''
+                echo Jenkins job finished.
+                exit /b 0
+            '''
         }
     }
 }
